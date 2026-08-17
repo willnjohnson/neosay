@@ -13,6 +13,7 @@ of `neosay` don't have to touch Pillow at all.
 from __future__ import annotations
 
 import os
+import re
 from typing import List
 
 from PIL import Image
@@ -21,6 +22,7 @@ from . import rgbz
 
 RESET = "\x1b[0m"
 ALPHA_THRESHOLD = 40
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def _fg(r: int, g: int, b: int) -> str:
@@ -100,14 +102,21 @@ def render_image(path: str, width_cols: int = 40) -> List[str]:
     return lines
 
 
-def cache_path(art_dir: str, slug: str) -> str:
-    return os.path.join(art_dir, f"{slug}.ans")
+def cache_path(art_dir: str, slug: str, width_cols: int) -> str:
+    # width_cols is part of the filename (not just a render argument) so
+    # that a cache built at one --art-width is never mistaken for one
+    # built at another. Without this, requesting a different width
+    # without --force-render would silently reuse art rendered at the
+    # old width while compose() pads *other* rows to the new width,
+    # leaving the two out of step (bubble border rows drift left/right
+    # relative to rows where the pet art actually appears).
+    return os.path.join(art_dir, f"{slug}.w{width_cols}.ans")
 
 
 def render_and_cache(raw_path: str, art_dir: str, slug: str, width_cols: int = 40,
                       force: bool = False) -> List[str]:
     os.makedirs(art_dir, exist_ok=True)
-    cpath = cache_path(art_dir, slug)
+    cpath = cache_path(art_dir, slug, width_cols)
     if not force and os.path.exists(cpath) and os.path.getmtime(cpath) >= os.path.getmtime(raw_path):
         with open(cpath, "r", encoding="utf-8") as fh:
             return fh.read().split("\n")
@@ -118,7 +127,8 @@ def render_and_cache(raw_path: str, art_dir: str, slug: str, width_cols: int = 4
     return lines
 
 
-def visible_width(width_cols: int) -> int:
-    """Terminal cell width of a rendered line (constant, since every
-    line has exactly width_cols glyphs regardless of ANSI codes)."""
-    return width_cols
+def visible_width(line: str) -> int:
+    """Terminal column width of a single rendered line, i.e. its glyph
+    count with ANSI escape sequences stripped out (they occupy zero
+    terminal columns but count as characters in the raw string)."""
+    return len(_ANSI_RE.sub("", line))

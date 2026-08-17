@@ -31,10 +31,17 @@ BOX_ASCII = dict(
 
 
 def wrap_text(text: str, width: int) -> List[str]:
-    text = " ".join(text.split())  # collapse whitespace/newlines
-    if not text:
-        text = "..."
-    wrapped = textwrap.wrap(text, width=width) or [""]
+    lines = text.splitlines()
+    wrapped: List[str] = []
+    for line in lines:
+        line = " ".join(line.split())
+        if not line:
+            wrapped.append("")
+            continue
+        parts = textwrap.wrap(line, width=width) or [""]
+        wrapped.extend(parts)
+    if not wrapped:
+        wrapped = ["..."]
     return wrapped
 
 

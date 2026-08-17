@@ -53,6 +53,7 @@ neosay -T "hmm, maybe an Ummagine Snowcone..."   # thought bubble
 echo "night falls over Neopia" | neosay          # pipe input works
 fortune | neosay                                 # classic ponysay move
 neosay -l                                        # list pets + which you have
+neosay --fetch                                   # neofetch-style system info in a bubble
 ```
 
 Flags:
@@ -65,6 +66,7 @@ Flags:
 | `-W N` | wrap the bubble text at N columns (default 40) |
 | `--art-width N` | pet art width in terminal columns (default 34) |
 | `--ascii` | plain ASCII box instead of Unicode box-drawing |
+| `-F`, `--fetch` | print neofetch-style system info in the bubble |
 
 With no `-f`, a random pet from whatever's in `data/` is used.
 

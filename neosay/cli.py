@@ -6,7 +6,7 @@ import os
 import random
 import sys
 
-from . import manifest, render, compose
+from . import fetch, manifest, render, compose
 
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -108,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="cowsay/ponysay, but it's an 8-bit Neopet.",
     )
     p.add_argument("message", nargs="*", help="what the pet should say")
+    p.add_argument("-F", "--fetch", action="store_true", help="print neofetch-style system info in the bubble")
     p.add_argument("-f", "--pet", metavar="SLUG", help="pick a specific pet (see -l)")
     p.add_argument("-l", "--list", action="store_true", help="list available pets")
     p.add_argument("-T", "--think", action="store_true", help="thought bubble instead of speech")
@@ -126,7 +127,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     slug = resolve_pet(args.pet)
-    message = read_message(args.message)
+
+    if args.fetch:
+        message = fetch.generate()
+    else:
+        message = read_message(args.message)
 
     raw_path = pet_path(slug)
     art_lines = render.render_and_cache(
