@@ -1,16 +1,8 @@
-# neosay
+# Neosay
 
 Display an 8-bit Neopet in your terminal with your own text. Same idea as `cowsay`/`ponysay`.
 
-```
-      ▄▄▄▄
-    ▄██████▄      ╭────────────────────╮
-   ████░░████  ───┤ Neopia awaits!     │
-   ██████████     ╰────────────────────╯
-    ▀██████▀
-      ▀▀▀▀
-```
-(actual output is full 24-bit colour block art, not this sketch)
+<img width="693" height="508" alt="image" src="https://github.com/user-attachments/assets/2e4b0c84-ec5f-4cb6-a14d-b29cebf49dc2" />
 
 40 of the Neopets are supported, from Acara through Zafara.
 
