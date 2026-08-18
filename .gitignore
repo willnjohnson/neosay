@@ -1,18 +1,9 @@
 __pycache__/
 *.pyc
-*.egg-info/
 build/
 dist/
 
-# Pet art lives outside the repo entirely now (~/.neosay/pets by
-# default -- see neosay.cli.pets_dir()), but just in case anything
-# ever lands in the package's own data/ folder, keep everything
-# except the bundled demo out of git.
+# Data contains all of the available pets.
+# Installing neosay will move this data to ~/.neosay/pets, 
+# so that original folder can be deleted.
 neosay/data/*.rgbz
-!neosay/data/_demo.rgbz
-
-# Legacy/original source images some people may keep around locally
-# (e.g. a data_old/ folder used to migrate into the new .rgbz format)
-# -- these are often copyrighted art you don't hold the rights to
-# distribute, so never track them.
-neosay/data_old/
