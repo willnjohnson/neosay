@@ -1,0 +1,2 @@
+[console_scripts]
+neosay = neosay.cli:entry

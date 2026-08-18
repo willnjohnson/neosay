@@ -1,0 +1,125 @@
+Metadata-Version: 2.4
+Name: neosay
+Version: 0.1.0
+Summary: cowsay/ponysay, but an 8-bit Neopet says it
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: Pillow>=9.0
+
+# neosay
+
+Display an 8-bit Neopet in your terminal with your own text. Same idea as `cowsay`/`ponysay`.
+
+```
+      ▄▄▄▄
+    ▄██████▄      ╭────────────────────╮
+   ████░░████  ───┤ Neopia awaits!     │
+   ██████████     ╰────────────────────╯
+    ▀██████▀
+      ▀▀▀▀
+```
+(actual output is full 24-bit colour block art, not this sketch)
+
+40 of the Neopets are supported, from Acara through Zafara.
+
+## Pet storage
+
+Pets live as `.rgbz` files (neosay's own image format. See "How pet
+art is stored" below) under `~/.neosay/pets/`. Override root with the
+`NEOSAY_HOME` env var. This is deliberately *outside* the project
+folder, i.e. wherever you cloned or unzipped `neosay` itself (Downloads,
+`~/dev`, etc.) and can be deleted after running `./install.sh`, and
+your pets and rendered-art cache stay put.
+
+Drop a file named `<slug>.rgbz` into that folder yourself (`acara.rgbz`,
+`shoyru.rgbz`, etc. -- `neosay -l` shows every slug) and it's available
+immediately, no reinstall needed.
+
+## Install
+
+```bash
+git clone <this repo>
+cd neosay
+./install.sh                     # installs `neosay` + sets up pet storage
+./install.sh path/to/pets.zip    # ...and imports pets you already have, in one go
+```
+
+`install.sh` uses `pip install --user .` when pip is available (handling
+PEP 668 "externally managed" systems automatically), and falls back to a
+small wrapper script in `~/.local/bin` if pip isn't present. Either way,
+it makes sure that directory is on your `PATH` (adding a line to your
+`~/.bashrc`/`~/.zshrc` if needed) so `neosay` works as a plain command from
+any directory -- no `./` or `python3 -m` required. If it had to edit your
+shell rc file, open a new terminal (or `source` it) once.
+
+## Use
+
+```bash
+neosay "Neopia awaits!"
+neosay -f shoyru "Wanna race to the Grundo Space Station?"
+neosay -T "hmm, maybe an Ummagine Snowcone..."   # thought bubble
+echo "night falls over Neopia" | neosay          # pipe input works
+fortune | neosay                                 # classic ponysay move
+neosay -l                                        # list pets + which you have
+neosay --fetch                                   # neofetch-style system info in a bubble
+```
+
+Flags:
+
+| Flag | Meaning |
+|---|---|
+| `-f SLUG` | pick a specific pet (see `neosay -l` for slugs) |
+| `-l` | list all 40 pets and which you have images for |
+| `-T` | thought bubble instead of speech bubble |
+| `-W N` | wrap the bubble text at N columns (default 40) |
+| `--art-width N` | pet art width in terminal columns (default 34) |
+| `--ascii` | plain ASCII box instead of Unicode box-drawing |
+| `-F`, `--fetch` | print neofetch-style system info in the bubble |
+
+With no `-f`, a random pet from whatever's in `data/` is used.
+
+## How pet art is stored
+
+Pets are stored in neosay's own `.rgbz` format instead of PNG: a small
+header (magic bytes, version, width, height) followed by the raw RGBA
+pixel data, zlib-compressed. PNG's chunk/filter machinery is overkill for
+small, flat-coloured 8-bit sprites -- a flat header plus zlib compresses
+these just as well with a far simpler format. It's lossless: decoding a
+`.rgbz` file reproduces the exact pixels it was encoded from. The full
+layout is documented at the top of `neosay/rgbz.py`.
+
+## How it renders
+
+Each pet image gets resized to a small grid and printed with the terminal
+"half-block" trick (`▀`/`▄` glyphs with independent foreground/background
+truecolor), so two source pixels become one character cell. Transparent
+pixels are left as blank space so the art sits cleanly on your terminal's
+own background. Rendered output is cached as plain text, so repeat runs
+skip Pillow entirely.
+
+Both the pet art and the render cache live under `~/.neosay/` (`pets/`
+and `art/` respectively). Override the root with the `NEOSAY_HOME` env
+var.
+
+## Project layout
+
+```
+neosay/
+  manifest.py       40 pet slugs -> display names (+ official URLs, for reference)
+  rgbz.py           neosay's own image format: encode/decode
+  render.py         .rgbz -> half-block ANSI art, with caching
+  bubble.py         text wrapping + speech/thought bubble box drawing
+  compose.py        lays the pet art and bubble out side by side
+  cli.py            argument parsing / orchestration / pet storage paths
+  data/             only the bundled data/_demo.rgbz ships here
+import_assets.py    imports pets from a zip/folder into ~/.neosay/pets/
+install.sh          sets up the `neosay` command, migrates + caches pet art
+```
+
+## Credits
+
+Concept inspired by [erkin/ponysay](https://github.com/erkin/ponysay), a
+`cowsay` rewrite for My Little Pony.
+
+Neopets is a trademark of Neopets, Inc.; this is an unaffiliated fan tool
+for personal terminal use.
